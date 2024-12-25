@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Feeding India - Connecting Restaurants with NGOs to Fight Hunger</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: #ffffff;
+        }
+
+        .navbar {
+            background-color: #1e1e1e;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: #dc3545;
+            font-size: 24px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-button {
+            background-color: transparent;
+            border: 2px solid #dc3545;
+            color: #dc3545;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .nav-button:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .nav-button.primary {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .nav-button.primary:hover {
+            background-color: #c82333;
+            border-color: #c82333;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #dc3545, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: #888888;
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .feature-card svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 20px;
+            fill: #dc3545;
+        }
+
+        .feature-card h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .feature-card p {
+            color: #888888;
+            line-height: 1.6;
+        }
+
+        .impact-section {
+            background-color: #1e1e1e;
+            padding: 80px 20px;
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            max-width: 1000px;
+            margin: 40px auto 0;
+        }
+
+        .impact-stat {
+            padding: 20px;
+        }
+
+        .impact-stat h3 {
+            font-size: 36px;
+            color: #dc3545;
+            margin-bottom: 10px;
+        }
+
+        .impact-stat p {
+            color: #888888;
+            font-size: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
+            
+            .impact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                font-size: 36px;
+            }
+
+            .hero p {
+                font-size: 18px;
+            }
+        }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">Feeding India</a>
+        <div class="nav-buttons">
+            <a href="login.html" class="nav-button">Login</a>
+            <a href="signup.html" class="nav-button primary">Sign Up</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Fighting Hunger Together</h1>
+        <p>Connecting restaurants with surplus food to NGOs that help feed those in need.<br>
+           Join our mission to reduce food waste and make a difference in your community.</p>
+        <div class="nav-buttons" style="justify-content: center;">
+            <a href="signup.html?type=restaurant" class="nav-button">I'm a Restaurant</a>
+            <a href="signup.html?type=ngo" class="nav-button primary">I'm an NGO</a>
+        </div>
+    </section>
+
+    <div class="features">
+        <div class="feature-card">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+            <h3>For Restaurants</h3>
+            <p>Easily donate surplus food, track your contributions, and make a real impact in your community. Get detailed analytics of your donations and the number of people you've helped.</p>
+        </div>
+        <div class="feature-card">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"></path>
+            </svg>
+            <h3>For NGOs</h3>
+            <p>Find available food donations in your area, coordinate pickups efficiently, and help more people in need. Get real-time notifications when new donations are available.</p>
+        </div>
+        <div class="feature-card">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>
+            </svg>
+            <h3>Real Impact</h3>
+            <p>Together we're reducing food waste and fighting hunger. Every donation helps feed families in need and creates a more sustainable community.</p>
+        </div>
+    </div>
+
+    <section class="impact-section">
+        <h2 style="font-size: 36px; margin-bottom: 20px;">Our Impact So Far</h2>
+        <p style="color: #888888; margin-bottom: 40px;">Together we're making a difference in communities across India</p>
+        <div class="impact-grid">
+            <div class="impact-stat">
+                <h3>10,000+</h3>
+                <p>Meals Donated</p>
+            </div>
+            <div class="impact-stat">
+                <h3>50+</h3>
+                <p>Partner Restaurants</p>
+            </div>
+            <div class="impact-stat">
+                <h3>30+</h3>
+                <p>NGO Partners</p>
+            </div>
+        </div>
+    </section>
+  </body>
+</html>

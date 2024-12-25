@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Dashboard - Feeding India</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            color: #dc3545;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 40px;
+        }
+
+        .nav-link {
+            display: block;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-link:hover {
+            background-color: #2a2a2a;
+        }
+
+        .nav-link.active {
+            background-color: #dc3545;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-card h3 {
+            color: #888888;
+            font-size: 14px;
+            margin: 0 0 10px 0;
+        }
+
+        .stat-card p {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .new-donation-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 30px;
+            transition: background-color 0.3s;
+        }
+
+        .new-donation-btn:hover {
+            background-color: #c82333;
+        }
+
+        .donations-table {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .donations-table th {
+            background-color: #2a2a2a;
+            color: #888888;
+            font-weight: 500;
+            text-align: left;
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        .donations-table td {
+            padding: 15px;
+            border-bottom: 1px solid #2a2a2a;
+            color: #ffffff;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-available {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-claimed {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .status-completed {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 5px 10px;
+        }
+
+        .action-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .modal input, .modal select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            background-color: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            color: #ffffff;
+            font-size: 16px;
+        }
+
+        .modal label {
+            display: block;
+            margin-bottom: 8px;
+            color: #888888;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-cancel {
+            background-color: #2a2a2a;
+            color: #ffffff;
+        }
+
+        .confirm-btn {
+            color: #28a745 !important;
+            margin-right: 10px;
+        }
+
+        .reject-btn {
+            color: #dc3545 !important;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .status-confirmed {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-cancelled {
+            background-color: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">Feeding India</div>
+            <nav>
+                <a href="restaurant-dashboard.html" class="nav-link active">Dashboard</a>
+                <a href="my-donations.html" class="nav-link">My Donations</a>
+                <a href="restaurant-profile.html" class="nav-link">Profile</a>
+                <a href="#" onclick="logout()" class="nav-link">Logout</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Donations</h3>
+                    <p id="totalDonations">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Donations</h3>
+                    <p id="activeDonations">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>NGOs Helped</h3>
+                    <p id="ngosHelped">-</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Meals Provided</h3>
+                    <p id="mealsProvided">-</p>
+                </div>
+            </div>
+
+            <button onclick="openDonationModal()" class="new-donation-btn">New Donation</button>
+
+            <div class="donations-table">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th>Food Type</th>
+                            <th>Quantity</th>
+                            <th>Expiry</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activeDonationsTable">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px; color: #888888;">
+                                No donations available. Click "New Donation" to create one.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+            </div>
+
+            <!-- New Donation Modal -->
+            <div id="donationModal" class="modal">
+                <div class="modal-content">
+            <h2 style="color: #ffffff; margin-bottom: 20px;">New Donation</h2>
+                    <form id="donationForm">
+                <div>
+                    <label>Food Type</label>
+                    <input type="text" name="foodType" placeholder="e.g., Rice, Dal, Vegetables" required>
+                        </div>
+                <div>
+                    <label>Quantity (meals)</label>
+                    <input type="number" name="quantity" placeholder="Number of meals" required min="1" max="1000">
+                        </div>
+                <div>
+                    <label>Expiry Date & Time</label>
+                    <input type="datetime-local" name="expiryDate" required>
+                        </div>
+                <div>
+                    <label>Pickup Location</label>
+                    <input type="text" name="pickupLocation" placeholder="Full address for pickup" required>
+                        </div>
+                <div class="modal-buttons">
+                    <button type="button" onclick="closeDonationModal()" class="new-donation-btn modal-cancel">
+                        Cancel
+                    </button>
+                    <button type="submit" class="new-donation-btn">
+                        Create Donation
+                    </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+    <script src="scripts/auth.js"></script>
+    <script src="scripts/donations.js"></script>
+    <script src="scripts/history.js"></script>
+            <script>
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!requireAuth()) return;
+            
+            const user = getCurrentUser();
+            await loadDashboard();
+
+            // Set minimum date for new donations to current date/time
+            const dateInputs = document.querySelectorAll('input[type="datetime-local"]');
+            dateInputs.forEach(input => {
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                input.min = now.toISOString().slice(0, 16);
+            });
+        });
+
+        // Load and store donations in localStorage
+        function getStoredDonations() {
+            return JSON.parse(localStorage.getItem('donations') || '[]');
+        }
+
+        function storeDonations(donations) {
+            localStorage.setItem('donations', JSON.stringify(donations));
+        }
+
+        async function loadDashboard() {
+            try {
+                const user = getCurrentUser();
+                if (!user) return;
+
+                // Get all donations including completed ones
+                const donations = getStoredDonations().filter(d => d.restaurantId === user.orgId);
+                const completedDonations = donations.filter(d => d.status === 'COMPLETED');
+                
+                // Calculate stats
+                const stats = {
+                    totalDonations: donations.length,
+                    activeDonations: donations.filter(d => ['AVAILABLE', 'CLAIMED', 'PICKUP_PENDING'].includes(d.status)).length,
+                    ngosHelped: new Set(completedDonations.map(d => d.claimedBy)).size,
+                    mealsProvided: completedDonations.reduce((sum, d) => sum + (parseInt(d.quantity) || 0), 0)
+                };
+                
+                // Update the UI
+                updateStats(stats);
+                // Only show active donations in the table
+                const activeDonations = donations.filter(d => !['COMPLETED', 'CANCELLED'].includes(d.status));
+                updateDonationsTable(activeDonations);
+            } catch (error) {
+                console.error('Failed to load dashboard:', error);
+                showError('Failed to load dashboard data');
+            }
+        }
+
+        function updateStats(stats) {
+            document.getElementById('totalDonations').textContent = stats.totalDonations;
+            document.getElementById('activeDonations').textContent = stats.activeDonations;
+            document.getElementById('ngosHelped').textContent = stats.ngosHelped;
+            document.getElementById('mealsProvided').textContent = stats.mealsProvided;
+        }
+
+        function updateDonationsTable(donations) {
+            const tbody = document.getElementById('activeDonationsTable');
+            tbody.innerHTML = donations.map(donation => {
+                const isAvailable = donation.status === 'AVAILABLE';
+                const isPendingPickup = donation.status === 'PICKUP_PENDING';
+                
+                let actionButton = '';
+                if (isAvailable) {
+                    actionButton = `
+                        <button onclick="cancelDonation('${donation.id}')" class="action-btn">
+                            Cancel
+                        </button>
+                    `;
+                } else if (isPendingPickup) {
+                    actionButton = `
+                        <div>
+                            <button onclick="confirmPickup('${donation.id}')" class="action-btn confirm-btn">
+                                Confirm Pickup
+                            </button>
+                            <button onclick="rejectPickup('${donation.id}')" class="action-btn reject-btn">
+                                Reject
+                            </button>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <tr data-id="${donation.id}">
+                        <td>${donation.foodType || 'N/A'}</td>
+                        <td>${donation.quantity ? donation.quantity + ' meals' : 'N/A'}</td>
+                        <td>${formatDate(donation.expiryDate)}</td>
+                        <td>
+                            <span class="status-badge ${getStatusClass(donation.status)}">
+                                ${formatStatus(donation.status)}
+                            </span>
+                        </td>
+                        <td>${actionButton}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                if (isNaN(date.getTime())) return 'Invalid Date';
+                return date.toLocaleString();
+            } catch (error) {
+                return 'Invalid Date';
+            }
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'AVAILABLE': 'status-available',
+                'CLAIMED': 'status-claimed',
+                'PICKUP_PENDING': 'status-pending',
+                'PICKUP_CONFIRMED': 'status-confirmed',
+                'COMPLETED': 'status-completed',
+                'CANCELLED': 'status-cancelled'
+            };
+            return classes[status] || '';
+        }
+
+        function formatStatus(status) {
+            const formats = {
+                'AVAILABLE': 'Available',
+                'CLAIMED': 'Claimed',
+                'PICKUP_PENDING': 'Pickup Pending',
+                'PICKUP_CONFIRMED': 'Pickup Confirmed',
+                'COMPLETED': 'Completed',
+                'CANCELLED': 'Cancelled'
+            };
+            return formats[status] || status;
+        }
+
+        function openDonationModal() {
+            const modal = document.getElementById('donationModal');
+            modal.style.display = 'block';
+
+            // Set minimum date for expiry
+            const expiryInput = modal.querySelector('input[name="expiryDate"]');
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            expiryInput.min = now.toISOString().slice(0, 16);
+        }
+
+        function closeDonationModal() {
+                    document.getElementById('donationModal').style.display = 'none';
+            document.getElementById('donationForm').reset();
+        }
+
+        document.getElementById('donationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            const formData = new FormData(e.target);
+            const quantity = parseInt(formData.get('quantity'));
+            
+            if (isNaN(quantity) || quantity <= 0) {
+                showError('Please enter a valid quantity');
+                return;
+            }
+
+            const newDonation = {
+                id: Date.now().toString(),
+                restaurantId: user.orgId,
+                foodType: formData.get('foodType'),
+                quantity: quantity,
+                expiryDate: formData.get('expiryDate'),
+                pickupLocation: formData.get('pickupLocation'),
+                status: 'AVAILABLE',
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                // Add to stored donations
+                const donations = getStoredDonations();
+                donations.unshift(newDonation);
+                storeDonations(donations);
+
+                // Update UI
+                closeDonationModal();
+                await loadDashboard();
+                showError('Donation created successfully', 'success');
+            } catch (error) {
+                showError('Failed to create donation');
+            }
+        });
+
+        async function cancelDonation(donationId) {
+            if (!confirm('Are you sure you want to cancel this donation?')) return;
+
+            try {
+                const donations = getStoredDonations();
+                const donationIndex = donations.findIndex(d => d.id === donationId);
+                
+                if (donationIndex !== -1) {
+                    donations[donationIndex].status = 'CANCELLED';
+                    storeDonations(donations);
+                    await loadDashboard();
+                    showError('Donation cancelled successfully', 'success');
+                }
+            } catch (error) {
+                showError('Failed to cancel donation');
+            }
+        }
+
+        async function confirmPickup(donationId) {
+            if (!confirm('Confirm that the NGO has picked up this donation?')) return;
+
+            try {
+                const donations = getStoredDonations();
+                const donationIndex = donations.findIndex(d => d.id === donationId);
+                
+                if (donationIndex === -1) {
+                    throw new Error('Donation not found');
+                }
+
+                // Update donation status and add completion details
+                donations[donationIndex] = {
+                    ...donations[donationIndex],
+                    status: 'COMPLETED',
+                    completedTime: new Date().toISOString()
+                };
+
+                // Store updated donations
+                storeDonations(donations);
+
+                // Update pickup requests
+                const pickupRequests = JSON.parse(localStorage.getItem('pickupRequests') || '[]');
+                const requestIndex = pickupRequests.findIndex(r => r.donationId === donationId);
+                if (requestIndex !== -1) {
+                    pickupRequests[requestIndex].status = 'CONFIRMED';
+                    pickupRequests[requestIndex].confirmedTime = new Date().toISOString();
+                    localStorage.setItem('pickupRequests', JSON.stringify(pickupRequests));
+                }
+
+                // Add to history
+                addToHistory(donations[donationIndex]);
+
+                // Refresh the dashboard to update stats
+                await loadDashboard();
+                showError('Pickup confirmed successfully!', 'success');
+            } catch (error) {
+                showError(error.message || 'Failed to confirm pickup');
+            }
+        }
+
+        async function rejectPickup(donationId) {
+            const reason = prompt('Please provide a reason for rejecting the pickup:');
+            if (!reason) return;
+
+            try {
+                // Update donation status back to claimed
+                const donations = getStoredDonations();
+                const donationIndex = donations.findIndex(d => d.id === donationId);
+                
+                if (donationIndex === -1) {
+                    throw new Error('Donation not found');
+                }
+
+                // Update main donations list
+                donations[donationIndex].status = 'CLAIMED';
+                donations[donationIndex].rejectionReason = reason;
+                donations[donationIndex].rejectedTime = new Date().toISOString();
+                storeDonations(donations);
+
+                // Update pickup requests
+                const pickupRequests = JSON.parse(localStorage.getItem('pickupRequests') || '[]');
+                const requestIndex = pickupRequests.findIndex(r => r.donationId === donationId);
+                if (requestIndex !== -1) {
+                    pickupRequests[requestIndex].status = 'REJECTED';
+                    pickupRequests[requestIndex].rejectionReason = reason;
+                    pickupRequests[requestIndex].rejectedTime = new Date().toISOString();
+                    localStorage.setItem('pickupRequests', JSON.stringify(pickupRequests));
+                }
+
+                // Update claimed donations
+                const claimedDonations = getClaimedDonations();
+                const claimedIndex = claimedDonations.findIndex(d => d.id === donationId);
+                if (claimedIndex !== -1) {
+                    claimedDonations[claimedIndex] = donations[donationIndex];
+                    storeClaimedDonations(claimedDonations);
+                }
+
+                // Refresh the display
+                await loadDashboard();
+                alert('Pickup request rejected.');
+            } catch (error) {
+                alert(error.message || 'Failed to reject pickup');
+            }
+        }
+
+        function showError(message, type = 'error') {
+            alert(message);
+                }
+            </script>
+</body>
+</html> 

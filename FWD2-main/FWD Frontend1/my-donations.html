@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Donations - Feeding India</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <style>
+        /* Add any additional styles here */
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <a href="index.html">Feeding India</a>
+            </div>
+            <nav>
+                <a href="restaurant-dashboard.html">Dashboard</a>
+                <a href="my-donations.html" class="active">My Donations</a>
+                <a href="profile.html">Profile</a>
+                <a href="index.html" class="logout">Logout</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>My Donations History</h1>
+            </header>
+
+            <div class="filter-controls">
+                <select id="statusFilter" onchange="filterDonations()">
+                    <option value="all">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="claimed">Claimed</option>
+                    <option value="completed">Completed</option>
+                </select>
+                <input type="text" id="dateFilter" placeholder="mm/dd/yyyy" oninput="filterDonations()" />
+            </div>
+
+            <div class="table-container">
+                <table class="donations-table">
+                    <thead>
+                        <tr>
+                            <th>Food Type</th>
+                            <th>Quantity</th>
+                            <th>Date</th>
+                            <th>NGO</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="donationTable">
+                        <!-- Donation rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Sample donation data (this should be replaced with actual data from local storage)
+        const donations = [
+            { foodType: 'Rice and Curry', quantity: '50 meals', date: '12/25/2024', ngo: 'N/A', status: 'Pending' },
+            { foodType: 'Rice and Curry', quantity: '50 meals', date: '12/25/2024', ngo: 'N/A', status: 'Pending' },
+            { foodType: 'Rice and Curry', quantity: '50 meals', date: '12/25/2024', ngo: 'N/A', status: 'Pending' },
+            { foodType: 'Rice and chicken', quantity: '2 meals', date: '12/25/2024', ngo: 'N/A', status: 'Pending' },
+            { foodType: 'Rice and chicken', quantity: '44 meals', date: '12/25/2024', ngo: 'N/A', status: 'Pending' },
+            { foodType: 'Rice and chicken', quantity: '12 meals', date: '12/25/2024', ngo: 'N/A', status: 'Claimed' },
+        ];
+
+        function loadDonations() {
+            const tableBody = document.getElementById('donationTable');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            donations.forEach(donation => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${donation.foodType}</td>
+                    <td>${donation.quantity}</td>
+                    <td>${donation.date}</td>
+                    <td>${donation.ngo}</td>
+                    <td>${donation.status}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function filterDonations() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+
+            const filteredDonations = donations.filter(donation => {
+                const matchesStatus = statusFilter === 'all' || donation.status.toLowerCase() === statusFilter.toLowerCase();
+                const matchesDate = dateFilter === '' || donation.date === dateFilter;
+
+                return matchesStatus && matchesDate;
+            });
+
+            const tableBody = document.getElementById('donationTable');
+            tableBody.innerHTML = ''; // Clear existing rows
+
+            filteredDonations.forEach(donation => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${donation.foodType}</td>
+                    <td>${donation.quantity}</td>
+                    <td>${donation.date}</td>
+                    <td>${donation.ngo}</td>
+                    <td>${donation.status}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Load donations when the page loads
+        window.onload = loadDonations;
+    </script>
+</body>
+</html> 

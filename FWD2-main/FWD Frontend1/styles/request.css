@@ -1,0 +1,32 @@
+.request-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-lg);
+}
+
+.request-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.request-form {
+    width: 100%;
+    max-width: 500px;
+    padding: var(--spacing-md);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+}
+
+.btn-request {
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-back {
+    background-color: transparent;
+    border: 2px solid var(--accent-red);
+} 

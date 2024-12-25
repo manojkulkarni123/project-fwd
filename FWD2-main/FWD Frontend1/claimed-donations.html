@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claimed Donations - Feeding India</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            color: #dc3545;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 40px;
+        }
+
+        .nav-link {
+            display: block;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-link:hover {
+            background-color: #2a2a2a;
+        }
+
+        .nav-link.active {
+            background-color: #dc3545;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .donation-card {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .donation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .donation-header h3 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-claimed {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .status-pending {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .status-confirmed {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .donation-details {
+            margin-bottom: 20px;
+        }
+
+        .donation-details p {
+            margin: 8px 0;
+            color: #888888;
+        }
+
+        .donation-details strong {
+            color: #ffffff;
+            margin-right: 5px;
+        }
+
+        .pickup-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .pickup-button:hover {
+            background-color: #218838;
+        }
+
+        .pickup-button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .timer {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .confirmation-pending {
+            color: #ffc107;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="logo">Feeding India</div>
+            <nav>
+                <a href="ngo-dashboard.html" class="nav-link">Available Donations</a>
+                <a href="claimed-donations.html" class="nav-link active">Claimed Donations</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <a href="#" onclick="logout()" class="nav-link">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>Claimed Donations</h1>
+            </header>
+
+            <div id="claimedDonationsGrid">
+                <!-- Claimed donations will be loaded here -->
+            </div>
+        </main>
+    </div>
+
+    <script src="scripts/auth.js"></script>
+    <script src="scripts/donations.js"></script>
+    <script src="scripts/history.js"></script>
+    <script>
+        // Check authentication
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireAuth()) return;
+            loadClaimedDonations();
+        });
+
+        function loadClaimedDonations() {
+            const currentUser = getCurrentUser();
+            const claimedDonations = getClaimedDonations().filter(d => d.claimedBy === currentUser.orgId);
+            const grid = document.getElementById('claimedDonationsGrid');
+            
+            if (claimedDonations.length === 0) {
+                grid.innerHTML = '<p>No claimed donations yet.</p>';
+                return;
+            }
+
+            grid.innerHTML = claimedDonations.map(donation => {
+                const pickupDeadline = new Date(donation.pickupBefore);
+                const now = new Date();
+                const timeLeft = Math.max(0, pickupDeadline - now);
+                const isExpired = timeLeft === 0;
+                const isPendingConfirmation = donation.status === 'PICKUP_PENDING';
+
+                return `
+                    <div class="donation-card" data-id="${donation.id}">
+                        <div class="donation-header">
+                            <h3>${donation.foodType}</h3>
+                            <span class="status-badge ${getStatusClass(donation.status)}">
+                                ${formatStatus(donation.status)}
+                            </span>
+                        </div>
+                        <div class="donation-details">
+                            <p><strong>Restaurant:</strong> ${donation.restaurantName || 'N/A'}</p>
+                            <p><strong>Location:</strong> ${donation.pickupLocation}</p>
+                            <p><strong>Quantity:</strong> ${donation.quantity} meals</p>
+                            <p><strong>Claimed Time:</strong> ${new Date(donation.claimedTime).toLocaleString()}</p>
+                            <p><strong>Pickup Before:</strong> ${new Date(donation.pickupBefore).toLocaleString()}</p>
+                            ${!isExpired && !isPendingConfirmation ? `
+                                <div class="timer">Time left: ${formatTimeLeft(timeLeft)}</div>
+                            ` : ''}
+                            ${isPendingConfirmation ? `
+                                <div class="confirmation-pending">Waiting for restaurant confirmation...</div>
+                            ` : ''}
+                        </div>
+                        ${!isExpired && !isPendingConfirmation ? `
+                            <button onclick="markAsPickedUp('${donation.id}')" class="pickup-button">
+                                Mark as Picked Up
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatTimeLeft(ms) {
+            const hours = Math.floor(ms / (1000 * 60 * 60));
+            const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+            return `${hours}h ${minutes}m`;
+        }
+
+        function getStatusClass(status) {
+            const classes = {
+                'CLAIMED': 'status-claimed',
+                'PICKUP_PENDING': 'status-pending',
+                'PICKUP_CONFIRMED': 'status-confirmed'
+            };
+            return classes[status] || 'status-claimed';
+        }
+
+        function formatStatus(status) {
+            const formats = {
+                'CLAIMED': 'Claimed',
+                'PICKUP_PENDING': 'Pickup Pending',
+                'PICKUP_CONFIRMED': 'Pickup Confirmed'
+            };
+            return formats[status] || status;
+        }
+
+        async function markAsPickedUp(donationId) {
+            try {
+                // Update donation status to pending confirmation
+                const donation = updateDonation(donationId, {
+                    status: 'PICKUP_PENDING',
+                    pickupRequestTime: new Date().toISOString()
+                });
+
+                if (!donation) {
+                    throw new Error('Donation not found');
+                }
+
+                // Remove from claimed donations list since it's now pending pickup
+                const claimedDonations = getClaimedDonations();
+                const updatedClaimedDonations = claimedDonations.filter(d => d.id !== donationId);
+                storeClaimedDonations(updatedClaimedDonations);
+
+                // Store pickup request for restaurant to confirm
+                const pickupRequests = JSON.parse(localStorage.getItem('pickupRequests') || '[]');
+                pickupRequests.push({
+                    donationId: donationId,
+                    requestTime: new Date().toISOString(),
+                    status: 'PENDING'
+                });
+                localStorage.setItem('pickupRequests', JSON.stringify(pickupRequests));
+
+                // Refresh the display
+                loadClaimedDonations();
+                alert('Pickup request sent to restaurant. Please wait for confirmation.');
+            } catch (error) {
+                alert(error.message || 'Failed to mark donation as picked up');
+            }
+        }
+
+        // Refresh the display every minute to update timers
+        setInterval(loadClaimedDonations, 60000);
+    </script>
+</body>
+</html> 

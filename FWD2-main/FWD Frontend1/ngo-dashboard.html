@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGO Dashboard - Feeding India</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            color: #dc3545;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 40px;
+        }
+
+        .nav-link {
+            display: block;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-link:hover {
+            background-color: #2a2a2a;
+        }
+
+        .nav-link.active {
+            background-color: #dc3545;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            background-color: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            color: #ffffff;
+        }
+
+        .donation-card {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .donation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .donation-header h3 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .time-left {
+            color: #dc3545;
+            font-size: 14px;
+        }
+
+        .donation-details {
+            margin-bottom: 20px;
+        }
+
+        .donation-details p {
+            margin: 8px 0;
+            color: #888888;
+        }
+
+        .donation-details strong {
+            color: #ffffff;
+            margin-right: 5px;
+        }
+
+        .claim-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .claim-button:hover {
+            background-color: #c82333;
+        }
+
+        select {
+            padding: 8px 12px;
+            background-color: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 4px;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="logo">Feeding India</div>
+            <nav>
+                <a href="#" class="nav-link active">Available Donations</a>
+                <a href="claimed-donations.html" class="nav-link">Claimed Donations</a>
+                <a href="history.html" class="nav-link">History</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <a href="#" onclick="logout()" class="nav-link">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="header">
+                <h1>Available Donations</h1>
+                <div class="search-controls">
+                    <input type="text" id="locationSearch" placeholder="Search by location..." class="search-input">
+                    <select id="foodTypeFilter">
+                        <option value="all">All Food Types</option>
+                        <option value="meals">Meals</option>
+                        <option value="groceries">Groceries</option>
+                        <option value="beverages">Beverages</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="donationsGrid">
+                <!-- Donations will be populated here -->
+            </div>
+        </main>
+    </div>
+
+    <script src="scripts/auth.js"></script>
+    <script>
+        // Check authentication
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireAuth()) return;
+            loadAvailableDonations();
+        });
+
+        function getStoredDonations() {
+            return JSON.parse(localStorage.getItem('donations') || '[]');
+        }
+
+        function storeDonations(donations) {
+            localStorage.setItem('donations', JSON.stringify(donations));
+        }
+
+        function getClaimedDonations() {
+            return JSON.parse(localStorage.getItem('claimedDonations') || '[]');
+        }
+
+        function storeClaimedDonations(donations) {
+            localStorage.setItem('claimedDonations', JSON.stringify(donations));
+        }
+
+        function loadAvailableDonations() {
+            const donations = getStoredDonations();
+            const availableDonations = donations.filter(d => d.status === 'AVAILABLE');
+            const grid = document.getElementById('donationsGrid');
+            
+            if (availableDonations.length === 0) {
+                grid.innerHTML = '<p>No available donations at the moment.</p>';
+                return;
+            }
+
+            grid.innerHTML = availableDonations.map(donation => {
+                const timeLeft = getTimeLeft(donation.expiryDate);
+                return `
+                    <div class="donation-card" data-id="${donation.id}">
+                    <div class="donation-header">
+                            <h3>${donation.foodType}</h3>
+                            <span class="time-left">${timeLeft}</span>
+                    </div>
+                    <div class="donation-details">
+                            <p><strong>Restaurant:</strong> ${donation.restaurantName || 'N/A'}</p>
+                            <p><strong>Location:</strong> ${donation.pickupLocation}</p>
+                            <p><strong>Quantity:</strong> ${donation.quantity} meals</p>
+                        <p><strong>Distance:</strong> 2.5 km away</p>
+                        </div>
+                        <button onclick="claimDonation('${donation.id}')" class="claim-button">Claim Donation</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTimeLeft(expiryDate) {
+            const expiry = new Date(expiryDate);
+            const now = new Date();
+            const diff = expiry - now;
+
+            if (diff < 0) return 'Expired';
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+            if (hours > 0) {
+                return `${hours} hours left`;
+            }
+            return `${minutes} minutes left`;
+        }
+
+        async function claimDonation(donationId) {
+            try {
+                const donations = getStoredDonations();
+                const donationIndex = donations.findIndex(d => d.id === donationId);
+                
+                if (donationIndex === -1) {
+                    throw new Error('Donation not found');
+                }
+
+                const donation = donations[donationIndex];
+                const currentUser = getCurrentUser();
+
+                // Update donation status
+                donation.status = 'CLAIMED';
+                donation.claimedBy = currentUser.orgId;
+                donation.claimedTime = new Date().toISOString();
+
+                // Update donations list
+                donations[donationIndex] = donation;
+                storeDonations(donations);
+
+                // Add to claimed donations
+                const claimedDonations = getClaimedDonations();
+                claimedDonations.unshift(donation);
+                storeClaimedDonations(claimedDonations);
+
+                // Refresh the display
+                loadAvailableDonations();
+                alert('Donation claimed successfully!');
+            } catch (error) {
+                alert(error.message || 'Failed to claim donation');
+            }
+        }
+
+        // Search and filter functionality
+        document.getElementById('locationSearch').addEventListener('input', filterDonations);
+        document.getElementById('foodTypeFilter').addEventListener('change', filterDonations);
+
+        function filterDonations() {
+            const searchTerm = document.getElementById('locationSearch').value.toLowerCase();
+            const foodType = document.getElementById('foodTypeFilter').value;
+            
+            const donations = getStoredDonations();
+            const filteredDonations = donations.filter(donation => {
+                const locationMatch = donation.pickupLocation.toLowerCase().includes(searchTerm);
+                const foodTypeMatch = foodType === 'all' || donation.foodType.toLowerCase().includes(foodType);
+                return donation.status === 'AVAILABLE' && locationMatch && foodTypeMatch;
+            });
+
+            const grid = document.getElementById('donationsGrid');
+            if (filteredDonations.length === 0) {
+                grid.innerHTML = '<p>No donations match your search criteria.</p>';
+                return;
+            }
+
+            grid.innerHTML = filteredDonations.map(donation => {
+                const timeLeft = getTimeLeft(donation.expiryDate);
+                return `
+                    <div class="donation-card" data-id="${donation.id}">
+                            <div class="donation-header">
+                                <h3>${donation.foodType}</h3>
+                            <span class="time-left">${timeLeft}</span>
+                            </div>
+                            <div class="donation-details">
+                            <p><strong>Restaurant:</strong> ${donation.restaurantName || 'N/A'}</p>
+                                <p><strong>Location:</strong> ${donation.pickupLocation}</p>
+                                <p><strong>Quantity:</strong> ${donation.quantity} meals</p>
+                                <p><strong>Distance:</strong> 2.5 km away</p>
+                            </div>
+                        <button onclick="claimDonation('${donation.id}')" class="claim-button">Claim Donation</button>
+                    </div>
+                        `;
+            }).join('');
+                }
+            </script>
+</body>
+</html> 

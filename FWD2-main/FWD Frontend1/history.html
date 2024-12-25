@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donation History - Feeding India</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+        }
+
+        .dashboard-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #1e1e1e;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .logo {
+            color: #dc3545;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 40px;
+        }
+
+        .nav-link {
+            display: block;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-link:hover {
+            background-color: #2a2a2a;
+        }
+
+        .nav-link.active {
+            background-color: #dc3545;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 250px;
+            padding: 30px;
+        }
+
+        .donation-card {
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .donation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .donation-header h3 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .status-cancelled {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .donation-details {
+            margin-bottom: 20px;
+        }
+
+        .donation-details p {
+            margin: 8px 0;
+            color: #888888;
+        }
+
+        .donation-details strong {
+            color: #ffffff;
+            margin-right: 5px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888888;
+        }
+
+        .filters {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-button {
+            background-color: #2a2a2a;
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .filter-button.active {
+            background-color: #dc3545;
+        }
+
+        .filter-button:hover {
+            background-color: #3a3a3a;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="logo">Feeding India</div>
+            <nav>
+                <a href="ngo-dashboard.html" class="nav-link">Available Donations</a>
+                <a href="claimed-donations.html" class="nav-link">Claimed Donations</a>
+                <a href="history.html" class="nav-link active">History</a>
+                <a href="profile.html" class="nav-link">Profile</a>
+                <a href="#" onclick="logout()" class="nav-link">Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="dashboard-header">
+                <h1>Donation History</h1>
+            </header>
+
+            <div class="filters">
+                <button class="filter-button active" data-filter="all">All</button>
+                <button class="filter-button" data-filter="completed">Completed</button>
+                <button class="filter-button" data-filter="cancelled">Cancelled</button>
+            </div>
+
+            <div id="historyGrid">
+                <!-- History items will be loaded here -->
+            </div>
+        </main>
+    </div>
+
+    <script src="scripts/auth.js"></script>
+    <script src="scripts/donations.js"></script>
+    <script src="scripts/history.js"></script>
+    <script>
+        let currentFilter = 'all';
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireAuth()) return;
+            loadHistory();
+            setupFilterButtons();
+        });
+
+        function setupFilterButtons() {
+            const buttons = document.querySelectorAll('.filter-button');
+            buttons.forEach(button => {
+                button.addEventListener('click', () => {
+                    buttons.forEach(b => b.classList.remove('active'));
+                    button.classList.add('active');
+                    currentFilter = button.dataset.filter;
+                    loadHistory();
+                });
+            });
+        }
+
+        function loadHistory() {
+            const currentUser = getCurrentUser();
+            let historyDonations = getHistoryByUser(currentUser.orgId);
+
+            // Apply filters
+            if (currentFilter !== 'all') {
+                historyDonations = historyDonations.filter(d => 
+                    currentFilter === 'completed' ? d.status === 'COMPLETED' : d.status === 'CANCELLED'
+                );
+            }
+
+            const grid = document.getElementById('historyGrid');
+            
+            if (historyDonations.length === 0) {
+                grid.innerHTML = '<div class="empty-state">No donation history found.</div>';
+                return;
+            }
+
+            grid.innerHTML = historyDonations.map(donation => `
+                <div class="donation-card">
+                    <div class="donation-header">
+                        <h3>${donation.foodType}</h3>
+                        <span class="status-badge ${getStatusClass(donation.status)}">
+                            ${formatStatus(donation.status)}
+                        </span>
+                    </div>
+                    <div class="donation-details">
+                        <p><strong>Restaurant:</strong> ${donation.restaurantName || 'N/A'}</p>
+                        <p><strong>Location:</strong> ${donation.pickupLocation}</p>
+                        <p><strong>Quantity:</strong> ${donation.quantity} meals</p>
+                        <p><strong>Claimed Time:</strong> ${new Date(donation.claimedTime).toLocaleString()}</p>
+                        <p><strong>Completed Time:</strong> ${new Date(donation.completedTime).toLocaleString()}</p>
+                        ${donation.status === 'CANCELLED' && donation.rejectionReason ? 
+                            `<p><strong>Cancellation Reason:</strong> ${donation.rejectionReason}</p>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusClass(status) {
+            return status === 'COMPLETED' ? 'status-completed' : 'status-cancelled';
+        }
+
+        function formatStatus(status) {
+            return status.charAt(0) + status.slice(1).toLowerCase();
+        }
+    </script>
+</body>
+</html> 
